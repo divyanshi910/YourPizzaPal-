@@ -2,7 +2,7 @@
 
 
 var options = {
-    "key": "rzp_test_z4Cdx4jOBtqais", // Enter the Key ID generated from the Dashboard
+    "key": "rzp_test_R7CjLn6UKO34Vy", // Enter the Key ID generated from the Dashboard
     "amount": "50000", // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
     "currency": "INR",
     "name": "Pizza Shop", //your business name
@@ -42,3 +42,4 @@ document.getElementById('rzp-button1').addEventListener('click',function(e){
     rzp1.open();
     e.preventDefault();
 });
+
