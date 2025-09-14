@@ -48,34 +48,71 @@ function printBasket(){
     basket.appendChild(totalLi);
 }
 
-function preparePizzaCard(pizza){
-    const ouputDiv = document.querySelector('#output');
-     const colDiv= document.createElement('div');
-     colDiv.className = 'col-4';
-     const cardDiv = document.createElement('div');
-     cardDiv.className = 'card';
-     cardDiv.style = "width: 18rem";
-     colDiv.appendChild(cardDiv);
-     const img = document.createElement('img');
-     img.src = pizza.url;
-     img.className = 'card-img-top';
-     cardDiv.appendChild(img);
-     const cardBody = document.createElement('div');
-     cardBody.className = 'cardBody';
-     cardDiv.appendChild(cardBody);
-     const h5 = document.createElement('h5');
-     h5.className = 'card-title';
-     h5.innerText = pizza.name;
-     const pTag = document.createElement('p');
-     pTag.className = 'card-text';
-     pTag.innerText = pizza.desc;
-     const button = document.createElement('button');
-     button.setAttribute('product-id',pizza.id);
-     button.addEventListener('click',addToCart);//event bind
-     button.innerText = 'Add to Cart';
-     button.className = 'btn btn-primary';
-     cardBody.appendChild(h5);
-     cardBody.appendChild(pTag);
-     cardBody.appendChild(button);
-     ouputDiv.appendChild(colDiv);
+function preparePizzaCard(pizza) {
+    const outputDiv = document.querySelector('#output');
+
+    // responsive column with spacing
+    const colDiv = document.createElement('div');
+    colDiv.className = 'col-12 col-sm-6 col-md-4 mb-4';
+
+    // card with equal height
+    const cardDiv = document.createElement('div');
+    cardDiv.className = 'card h-100 shadow-sm rounded-3';
+    colDiv.appendChild(cardDiv);
+
+    // pizza image
+    const img = document.createElement('img');
+    img.src = pizza.url;
+    img.className = 'card-img-top';
+    img.alt = pizza.name;
+    cardDiv.appendChild(img);
+
+    // card body
+    const cardBody = document.createElement('div');
+    cardBody.className = 'card-body d-flex flex-column';
+    cardDiv.appendChild(cardBody);
+
+    // title
+    const h5 = document.createElement('h5');
+    h5.className = 'card-title fw-bold';
+    h5.innerText = pizza.name;
+
+    // description
+    const pTag = document.createElement('p');
+    pTag.className = 'card-text text-muted';
+    pTag.innerText = pizza.desc;
+
+    // extra info list
+    const listGroup = document.createElement('ul');
+    listGroup.className = 'list-group list-group-flush mb-3';
+
+    const priceLi = document.createElement('li');
+    priceLi.className = 'list-group-item';
+    priceLi.innerHTML = `💲 <strong>Price:</strong> $${pizza.price}`;
+
+    const categoryLi = document.createElement('li');
+    categoryLi.className = 'list-group-item';
+    categoryLi.innerHTML = `🍴 <strong>Category:</strong> ${pizza.category || "Veg"}`;
+
+    const caloriesLi = document.createElement('li');
+    caloriesLi.className = 'list-group-item';
+    caloriesLi.innerHTML = `🔥 <strong>Calories:</strong> ${pizza.calories || "250"} kcal`;
+
+    listGroup.appendChild(priceLi);
+    listGroup.appendChild(categoryLi);
+    listGroup.appendChild(caloriesLi);
+
+    // add-to-cart button at bottom
+    const button = document.createElement('button');
+    button.setAttribute('product-id', pizza.id);
+    button.addEventListener('click', addToCart);
+    button.innerText = 'Add to Cart';
+    button.className = 'btn btn-primary mt-auto';
+
+    // append elements
+    cardBody.appendChild(h5);
+    cardBody.appendChild(pTag);
+    cardBody.appendChild(listGroup);
+    cardBody.appendChild(button);
+    outputDiv.appendChild(colDiv);
 }
