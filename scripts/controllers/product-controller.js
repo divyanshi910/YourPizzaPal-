@@ -4,85 +4,73 @@
 
 import productOperation from "../services/product-operations.js";
 
-//Data exchange b/w View and Model
-async function loadPizzas(){
-const pizzas= await productOperation.loadProducts();
-console.log('Pizzas are ', pizzas);
-for(let pizza of pizzas){
-    preparePizzaCard(pizza);
+// Load and display pizzas
+async function loadPizzas() {
+    const pizzas = await productOperation.loadProducts();
+    console.log('Pizzas are ', pizzas);
+    for (let pizza of pizzas) {
+        preparePizzaCard(pizza);
     }
 }
 loadPizzas();
 
-/* <div class="card" style="width: 18rem;">
-  <img src="..." class="card-img-top" alt="...">
-  <div class="card-body">
-    <h5 class="card-title">Card title</h5>
-    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card’s content.</p>
-    <a href="#" class="btn btn-primary">Go somewhere</a>
-  </div>
-</div> */
-function addToCart(){
-    //this- keyword(Current calling object reference)
-    console.log("Add to Cart Called..",this);
+// Add to cart handler
+function addToCart() {
     const currentButton = this;
     const pizzaId = currentButton.getAttribute('product-id');
-    console.log('Pizza Id is ' , pizzaId);
     productOperation.search(pizzaId);
     printBasket();
+    initRazorpay(); // update Razorpay amount whenever cart changes
 }
 
-function printBasket(){
+// Print cart sidebar
+function printBasket() {
     const cartProducts = productOperation.getProductsInCart();
     const basket = document.querySelector('#basket');
     basket.innerHTML = '';
-    let total=0
-    for(let product of cartProducts){
-       const li= document.createElement('li');
-        li.innerText = `${product.name} - ${product.price}`;
+    let totalUSD = 0;
+
+    for (let product of cartProducts) {
+        const li = document.createElement('li');
+        li.innerText = `${product.name} (x${product.quantity}) - $${(product.price * product.quantity).toFixed(2)}`;
         basket.appendChild(li);
-        total +=Number(product.price);
+        totalUSD += product.price * product.quantity;
     }
-    const totalLi=document.createElement('li');
-    totalLi.innerHTML = `<strong>Total: $${total}</strong>`;
+
+    const totalLi = document.createElement('li');
+    totalLi.innerHTML = `<strong>Total: $${totalUSD.toFixed(2)}</strong>`;
     basket.appendChild(totalLi);
 }
 
+// Prepare pizza card
 function preparePizzaCard(pizza) {
     const outputDiv = document.querySelector('#output');
 
-    // responsive column with spacing
     const colDiv = document.createElement('div');
     colDiv.className = 'col-12 col-sm-6 col-md-4 mb-4';
 
-    // card with equal height
     const cardDiv = document.createElement('div');
     cardDiv.className = 'card h-100 shadow-sm rounded-3';
     colDiv.appendChild(cardDiv);
 
-    // pizza image
     const img = document.createElement('img');
     img.src = pizza.url;
     img.className = 'card-img-top';
     img.alt = pizza.name;
     cardDiv.appendChild(img);
 
-    // card body
     const cardBody = document.createElement('div');
     cardBody.className = 'card-body d-flex flex-column';
     cardDiv.appendChild(cardBody);
 
-    // title
     const h5 = document.createElement('h5');
     h5.className = 'card-title fw-bold';
     h5.innerText = pizza.name;
 
-    // description
     const pTag = document.createElement('p');
     pTag.className = 'card-text text-muted';
     pTag.innerText = pizza.desc;
 
-    // extra info list
     const listGroup = document.createElement('ul');
     listGroup.className = 'list-group list-group-flush mb-3';
 
@@ -102,17 +90,49 @@ function preparePizzaCard(pizza) {
     listGroup.appendChild(categoryLi);
     listGroup.appendChild(caloriesLi);
 
-    // add-to-cart button at bottom
     const button = document.createElement('button');
     button.setAttribute('product-id', pizza.id);
     button.addEventListener('click', addToCart);
     button.innerText = 'Add to Cart';
     button.className = 'btn btn-primary mt-auto';
 
-    // append elements
     cardBody.appendChild(h5);
     cardBody.appendChild(pTag);
     cardBody.appendChild(listGroup);
     cardBody.appendChild(button);
     outputDiv.appendChild(colDiv);
 }
+
+// Initialize Razorpay dynamically
+function initRazorpay() {
+    const usdToInrRate = 83; // USD → INR
+    const totalUSD = productOperation.getCartTotal(); // sum in USD
+    const totalINR = totalUSD * usdToInrRate;
+    const amountInPaise = Math.round(totalINR * 100).toString(); // Razorpay expects paise
+
+    if (amountInPaise <= 0) {
+        document.getElementById('rzp-button1').disabled = true;
+        return;
+    } else {
+        document.getElementById('rzp-button1').disabled = false;
+    }
+
+    const options = {
+        key: "rzp_test_R7CjLn6UKO34Vy",
+        amount: amountInPaise,
+        currency: "INR",
+        name: "YourPizzaPal",
+        description: "Pizza Shop Transaction",
+        handler: function(response) {
+            alert("Payment Done! ID: " + response.razorpay_payment_id);
+        }
+    };
+
+    const rzp1 = new Razorpay(options);
+    document.getElementById('rzp-button1').onclick = function(e) {
+        rzp1.open();
+        e.preventDefault();
+    }
+}
+
+
